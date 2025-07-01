@@ -5,5 +5,4 @@ joblib
 streamlit
 xgboost
 supabase
-sqlalchemy
-psycopg2-binary
+
