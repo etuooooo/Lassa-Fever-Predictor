@@ -4,3 +4,4 @@ pandas==1.5.3
 joblib==1.5.1
 streamlit==1.45.1
 xgboost==1.7.6
+supabase==1.2.0
