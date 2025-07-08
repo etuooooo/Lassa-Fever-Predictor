@@ -137,7 +137,7 @@ if st.button("Predict Lassa Fever"):
             st.success("✅ Negative for Lassa Fever. Stay safe and healthy!")
             
         # Save results
-        symptoms_dict = {key: to_binary(val) for key, val in zip(
+        symptoms_dict = {key: bool(to_binary(val)) for key, val in zip(
             ["fever", "sore_throat", "vomiting", "headache", "muscle_pain",
              "abdominal_pain", "diarrhea", "bleeding", "hearing_loss", "fatigue"],
             inputs
