@@ -148,7 +148,7 @@ if st.button("Predict Lassa Fever"):
             "oxygen_level": oxygen_level
         }
 
-        save_to_database(name, age, gender, symptoms_dict, vitals_dict, prediction_label)
+        save_to_database(name, age, gender, symptoms_dict, vitals_dict, "Positive" if prediction == 1 else "Negative")
 
 # In[ ]:
 
