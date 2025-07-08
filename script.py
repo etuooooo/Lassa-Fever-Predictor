@@ -4,11 +4,40 @@
 # In[10]:
 
 
-import streamlit as st
-import numpy as np
 import pandas as pd
+from sqlalchemy import create_engine
+import os
 import joblib
 from sklearn.preprocessing import StandardScaler
+
+# Database setup
+DATABASE_URL = os.getenv("DATABASE_URL")
+engine = create_engine(DATABASE_URL)
+
+# Function to save to database
+def save_to_database(name: str, age: int, gender: str, symptoms: dict, vitals: dict, prediction: str):
+    data = {
+        "name": name,
+        "age": age,
+        "gender": gender,
+        "prediction": prediction,
+        "fever": symptoms.get("fever"),
+        "sore_throat": symptoms.get("sore_throat"),
+        "vomiting": symptoms.get("vomiting"),
+        "headache": symptoms.get("headache"),
+        "muscle_pain": symptoms.get("muscle_pain"),
+        "abdominal_pain": symptoms.get("abdominal_pain"),
+        "diarrhea": symptoms.get("diarrhea"),
+        "bleeding": symptoms.get("bleeding"),
+        "hearing_loss": symptoms.get("hearing_loss"),
+        "fatigue": symptoms.get("fatigue"),
+        "temperature": vitals.get("temperature"),
+        "heart_rate": vitals.get("heart_rate"),
+        "oxygen_level": vitals.get("oxygen_level")
+    }
+
+    df = pd.DataFrame([data])
+    df.to_sql("lassa_predictions", con=engine, if_exists="append", index=False)
 
 # Load model and scaler
 model = joblib.load("XGBoost_model.pkl")
@@ -18,13 +47,15 @@ st.set_page_config(page_title="Lassa Fever Predictor", page_icon="🦠")
 
 st.title("🦠 Lassa Fever Prediction System")
 st.markdown(
-    """
-    Please **fill in the symptoms and vital signs below** to get a Lassa Fever prediction.
-    
-    Use the dropdown menus to select **Yes** or **No** for each symptom.
-    """
-)
+    "Please **fill in the personal details, symptoms and vital signs below** to get a prediction.")
 st.write("---")
+# === Personal Information ===
+st.header("Personal Information")
+name = st.text_input("Full Name")
+age = st.number_input("Age", min_value=0, max_value=120, step=1)
+gender = st.selectbox("Gender", ["-- Select --", "Male", "Female"])
+
+st.write("")
 
 # Helper function for symptom dropdown with placeholder default
 def symptom_dropdown(label):
@@ -103,7 +134,20 @@ if st.button("Predict Lassa Fever"):
             st.error("⚠️ **Positive for Lassa Fever!** Please seek medical attention immediately.")
         else:
             st.success("✅ Negative for Lassa Fever. Stay safe and healthy!")
+            
+        # Save results
+        symptoms_dict = {key: to_binary(val) for key, val in zip(
+            ["fever", "sore_throat", "vomiting", "headache", "muscle_pain",
+             "abdominal_pain", "diarrhea", "bleeding", "hearing_loss", "fatigue"],
+            inputs
+        )}
+        vitals_dict = {
+            "temperature": temperature,
+            "heart_rate": heart_rate,
+            "oxygen_level": oxygen_level
+        }
 
+        save_to_database(name, age, gender, symptoms_dict, vitals_dict, prediction_label)
 
 # In[ ]:
 
